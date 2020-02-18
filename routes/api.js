@@ -21,10 +21,26 @@ module.exports = function (app) {
 //       }
       try {
         const data = await superagent.get(`https://repeated-alpaca.glitch.me/v1/stock/${stock}/quote`);
+
+        if (data.body === 'Unknown symbol') {
+          throw new Error('Unknown symbol');
+        }
+        
         console.log(data.body.latestPrice);
       } catch (err) {
-        return res.status(400).json({ error: 'An error occurred: ' + err });
+        return res.status(400).json({ error: err.message });
       }
     });
-    
 };
+
+async function getStockPrice(stock) {
+      try {
+        const data = await superagent.get(`https://repeated-alpaca.glitch.me/v1/stock/${stock}/quote`);
+
+        if (data.body === 'Unknown symbol') {
+          throw new Error('Unknown symbol');
+        }
+      } catch (err) {
+        return res.status(400).json({ error: err.message });
+      } 
+}
