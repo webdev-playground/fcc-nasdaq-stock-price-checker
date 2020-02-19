@@ -35,12 +35,13 @@ module.exports = function(app) {
       for (let st of stock) {
         const price = await getStockPrice(st);
         const likes = like ? 1 : 0;
+        console.log(price, likes);
 
         let stockLikes;
         // Check if IP address has already been recorded
         if (likes > 0) {
           const ip = req.ip;
-          const foundIp = await IP.findOne({ ip: ip });
+          const foundIp = await IP.exists({ ip: ip });
           if (!foundIp) {
             // store IP in db
             await IP.save({ ip: ip });
@@ -53,13 +54,14 @@ module.exports = function(app) {
                   likes: 1
                 }
               },
-              { new: true }
+              { new: true, upsert: true }
             );
           }
         }
         
         if (!stockLikes) {
-          stockLikes = await Stock.findOne({ stock: st });
+          stockLikes = await Stock.findOne({ stock: st }).select({ likes: 1 }).lean();
+          console.log('hi');
         }
 
         const stData = { stock: st, price: price, likes: stockLikes.likes };
