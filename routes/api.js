@@ -14,11 +14,18 @@ const superagent = require("superagent");
 module.exports = function(app) {
   app.route("/api/stock-prices").get(async function(req, res) {
     let { stock, like } = req.query;
-    const ip = req.ip;
     
     try {
+      if (!stock) {
+        throw new Error('stock symbol needs to be provided in query');
+      }
+      
       if (!Array.isArray(stock)) {
         stock = [stock];
+      }
+      
+      if (stock.length > 2) {
+        throw new Error('a maximum of 2 stocks can be specified');
       }
       
       const data = []
@@ -26,6 +33,12 @@ module.exports = function(app) {
       for (let st of stock) {
         const price = await getStockPrice(st);
         const likes = like ? 1 : 0;
+        
+        // CHeck if IP address 
+        if (likes > 0) {
+          const ip = req.ip;
+          if 
+        }
         
         const stData = { stock: st, price: price, likes: likes };
         
