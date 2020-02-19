@@ -37,7 +37,7 @@ module.exports = function(app) {
       if (foundIp) {
         console.log("IP already exists");
       } else {
-        console.log('Unique IP');
+        console.log("Unique IP");
       }
 
       // Increment only if didn't find IP, and query like is true
@@ -60,7 +60,7 @@ module.exports = function(app) {
           },
           { new: true, upsert: true } // create new document if does not already exist
         );
-
+        
         data.push(s);
       }
 
@@ -69,20 +69,21 @@ module.exports = function(app) {
         await IP.create({ ip: ip });
       }
 
-      const result = { stockData: undefined };
       if (data.length === 1) {
-        result.stockData = data[0];
-      } else {
-        const numLikesA = data[0].likes;
-        const numLikesB = data[1].likes;
-        const relLikesA = numLikesA - numLikesB;
-        const relLikesB = numLikesB - numLikesA;
-        data[0].rel_likes = relLikesA;
-        data[1].rel_likes = relLikesB;
-        data[0].likes = 10;
-        console.log(data);
-        result.stockData = data;
+        const result = { stockData: data[0] };
+        return res.status(200).json(result);
       }
+
+      const numLikesA = data[0].likes;
+      const numLikesB = data[1].likes;
+      const relLikesA = numLikesA - numLikesB;
+      const relLikesB = numLikesB - numLikesA;
+      const result = {
+        stockData: [
+          { stock: data[0].stock, price: data[0].price, rel_likes: relLikesA },
+          { stock: data[1].stock, price: data[1].price, rel_likes: relLikesB }
+        ]
+      };
 
       return res.status(200).json(result);
     } catch (err) {

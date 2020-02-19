@@ -9,6 +9,10 @@ const ipSchema = new Schema({
   likes: {
     type: Number,
     default: 0
+  },
+  price: {
+    type: Number,
+    required: true
   }
 });
 
