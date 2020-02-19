@@ -14,9 +14,8 @@ const superagent = require("superagent");
 module.exports = function(app) {
   app.route("/api/stock-prices").get(async function(req, res) {
     let { stock, like } = req.query;
-    //       if (Array.isArray(stock)) {
-
-    //       }
+    const ip = req.ip;
+    
     try {
       if (!Array.isArray(stock)) {
         stock = [stock];
@@ -26,16 +25,21 @@ module.exports = function(app) {
 
       for (let st of stock) {
         const price = await getStockPrice(st);
-        const likes = 0;
+        const likes = like ? 1 : 0;
         
         const stData = { stock: st, price: price, likes: likes };
         
         data.push(stData);
       }
+      
+      const stockData = { stockData: data };
+      if (data.length === 1) {
+        stockData.stockData = data[0];
+      }
 
       return res
         .status(200)
-        .json({ stockData: data });
+        .json(stockData);
     } catch (err) {
       return res.status(400).json({ error: err.message });
     }
