@@ -69,12 +69,22 @@ module.exports = function(app) {
         await IP.create({ ip: ip });
       }
 
-      const stockData = { stockData: data };
+      const result = { stockData: undefined };
       if (data.length === 1) {
-        stockData.stockData = data[0];
+        result.stockData = data[0];
+      } else {
+        const numLikesA = data[0].likes;
+        const numLikesB = data[1].likes;
+        const relLikesA = numLikesA - numLikesB;
+        const relLikesB = numLikesB - numLikesA;
+        data[0].rel_likes = relLikesA;
+        data[1].rel_likes = relLikesB;
+        data[0].likes = 10;
+        console.log(data);
+        result.stockData = data;
       }
 
-      return res.status(200).json(stockData);
+      return res.status(200).json(result);
     } catch (err) {
       return res.status(400).json({ error: err.message });
     }
