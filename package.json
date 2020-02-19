@@ -4,7 +4,8 @@
   "description": "What am I about?",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "mocha tests --ui tdd"
   },
   "dependencies": {
     "express": "^4.17.1",
