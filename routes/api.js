@@ -30,43 +30,43 @@ module.exports = function(app) {
         throw new Error("a maximum of 2 stocks can be specified");
       }
 
+      // Check if IP already recorded - i.e. user has already submitted one like
+      const ip = req.ip;
+      const foundIp = await IP.exists({ ip: ip });
+
+      if (foundIp) {
+        console.log("IP already exists");
+      } else {
+        console.log('Unique IP');
+      }
+
+      // Increment only if didn't find IP, and query like is true
+      const incLike = !foundIp && like ? 1 : 0;
+
       const data = [];
 
       for (let st of stock) {
         const price = await getStockPrice(st);
-        const likes = like ? 1 : 0;
-        console.log(price, likes);
 
-        let stockLikes;
-        // Check if IP address has already been recorded
-        if (likes > 0) {
-          const ip = req.ip;
-          const foundIp = await IP.exists({ ip: ip });
-          if (!foundIp) {
-            // store IP in db
-            await IP.save({ ip: ip });
+        // increment likes
+        const s = await Stock.findOneAndUpdate(
+          { stock: st },
+          {
+            stock: st,
+            price: price,
+            $inc: {
+              likes: incLike
+            }
+          },
+          { new: true, upsert: true } // create new document if does not already exist
+        );
 
-            // increment likes
-            stockLikes = await Stock.findOneAndUpdate(
-              { stock: st },
-              {
-                $inc: {
-                  likes: 1
-                }
-              },
-              { new: true, upsert: true }
-            );
-          }
-        }
-        
-        if (!stockLikes) {
-          stockLikes = await Stock.findOne({ stock: st }).select({ likes: 1 }).lean();
-          console.log('hi');
-        }
+        data.push(s);
+      }
 
-        const stData = { stock: st, price: price, likes: stockLikes.likes };
-
-        data.push(stData);
+      // store IP in db
+      if (incLike > 0) {
+        await IP.create({ ip: ip });
       }
 
       const stockData = { stockData: data };
